@@ -94,6 +94,20 @@ footer{margin-top:15px;line-height:1.6}
 </div>
 
 <section class="card">
+  
+<section class="card">
+  <h2>🤖 BOT DE SEÑALES CONFIRMADAS</h2>
+  <p id="botStatus" class="status">
+    ESPERANDO DATOS SUFICIENTES
+  </p>
+  <p id="botReason" class="muted">
+    El bot comprobará RSI y MACD antes de mostrar una señal.
+  </p>
+  <p class="muted">
+    Señales educativas sobre el precio YES del contrato,
+    no una predicción garantizada del precio de Bitcoin.
+  </p>
+</section>
   <h2>Estado de conexión</h2>
   <p id="message" role="status">Iniciando consulta a Kalshi…</p>
   <p class="muted">La consulta se repite cada 15 segundos mientras esta página esté abierta.</p>
@@ -362,6 +376,77 @@ function updateIndicators() {
   $("macd").textContent = (macd*100).toFixed(2)+"¢";
   $("signal").textContent = "Señal: "+(signal*100).toFixed(2)+"¢ · "+
     (macd>signal ? "MACD por encima de señal" : "MACD por debajo de señal");
+}
+
+let lastBotSignal = "";
+
+function updateBotSignal() {
+  const status = $("botStatus");
+  const reason = $("botReason");
+
+  const rsiText = $("rsi").textContent;
+  const macdText = $("macd").textContent;
+  const signalText = $("signal").textContent;
+
+  const rsi = Number(rsiText);
+  const macd = parseFloat(macdText);
+  const signalMatch = signalText.match(/Señal:\s*(-?[\d.]+)¢/);
+  const macdSignal = signalMatch ? Number(signalMatch[1]) : NaN;
+
+  if (
+    history.length < 35 ||
+    !Number.isFinite(rsi) ||
+    !Number.isFinite(macd) ||
+    !Number.isFinite(macdSignal)
+  ) {
+    status.textContent = "ESPERANDO DATOS";
+    reason.textContent =
+      "Se necesitan al menos 35 observaciones válidas.";
+    status.style.color = "#ffd166";
+    lastBotSignal = "";
+    return;
+  }
+
+  let next = "NEUTRAL";
+  let explanation =
+    "Los indicadores todavía no coinciden. No hay señal confirmada.";
+
+  if (rsi > 50 && macd > macdSignal) {
+    next = "ALCISTA";
+    explanation =
+      "RSI por encima de 50 y MACD por encima de su línea de señal.";
+  } else if (rsi < 50 && macd < macdSignal) {
+    next = "BAJISTA";
+    explanation =
+      "RSI por debajo de 50 y MACD por debajo de su línea de señal.";
+  }
+
+  if (next === "ALCISTA") {
+    status.style.color = "#35d49a";
+    status.textContent = "SEÑAL ALCISTA · YES";
+  } else if (next === "BAJISTA") {
+    status.style.color = "#ff6b7d";
+    status.textContent = "SEÑAL BAJISTA · YES";
+  } else {
+    status.style.color = "#ffd166";
+    status.textContent = "ESPERANDO CONFIRMACIÓN";
+  }
+
+  reason.textContent = explanation;
+
+  if (next !== "NEUTRAL" && next !== lastBotSignal) {
+    const alert = $("alert");
+    alert.style.display = "block";
+    alert.style.color =
+      next === "ALCISTA" ? "#35d49a" : "#ff6b7d";
+    alert.textContent =
+      "BOT: " + next +
+      " · RSI " + rsi.toFixed(1) +
+      " · MACD " + macd.toFixed(2) + "¢" +
+      " · " + new Date().toLocaleTimeString("es-US");
+  }
+
+  lastBotSignal = next;
 }
 
 $("refresh").addEventListener("click", fetchMarkets);
