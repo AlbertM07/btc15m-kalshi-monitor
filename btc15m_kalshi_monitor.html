@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#10131b">
+<title>BTC 15m · Kalshi Monitor</title>
+<style>
+:root{color-scheme:dark;--bg:#10131b;--panel:#191e29;--line:#2b3342;--muted:#9ba7ba;--text:#f4f7fb;--green:#36d399;--red:#ff6b78;--yellow:#ffd166;--blue:#7aa7ff}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+header{padding:20px 16px 12px;position:sticky;top:0;background:rgba(16,19,27,.96);backdrop-filter:blur(12px);z-index:5;border-bottom:1px solid var(--line)}
+h1{font-size:21px;margin:0 0 6px}p{color:var(--muted);line-height:1.4;margin:6px 0}
+main{padding:14px;max-width:900px;margin:auto;display:grid;gap:12px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:14px;min-width:0}
+.row{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.label{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.big{font-size:27px;font-weight:750;font-variant-numeric:tabular-nums}.muted{color:var(--muted)}.green{color:var(--green)}.red{color:var(--red)}.yellow{color:var(--yellow)}
+.pill{border:1px solid var(--line);border-radius:999px;padding:5px 9px;font-size:12px;color:var(--muted)}
+button,input,select{font:inherit;color:var(--text);background:#111620;border:1px solid #394355;border-radius:10px;padding:10px}
+button{cursor:pointer}button.primary{background:#dce8ff;color:#10131b;border-color:#dce8ff;font-weight:700}
+button:disabled{opacity:.5}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.stat{padding:10px;border-radius:12px;background:#111620}.stat .big{font-size:21px;margin-top:5px}
+canvas{width:100%;height:180px;display:block;background:#111620;border-radius:10px}
+#markets{display:grid;gap:8px}.market{padding:12px;border:1px solid var(--line);border-radius:12px;display:grid;gap:8px}
+.market button{padding:7px 9px}.market-title{font-weight:650}
+input[type=number]{width:90px}.controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.status{display:inline-flex;gap:6px;align-items:center}.dot{width:8px;height:8px;border-radius:50%;background:var(--yellow)}.dot.live{background:var(--green)}
+.small{font-size:12px;color:var(--muted)}.alert{padding:9px 10px;border-radius:10px;background:#111620;border:1px solid var(--line);margin-top:7px}
+footer{padding:8px 16px 28px;color:var(--muted);font-size:12px;line-height:1.5}
+@media(min-width:700px){main{grid-template-columns:1fr 1fr}.wide{grid-column:1/-1}header{padding-left:max(16px,calc((100vw - 868px)/2));padding-right:max(16px,calc((100vw - 868px)/2))}}
+</style>
+</head>
+<body>
+<header>
+ <div class="row"><div><h1>BTC 15m · Kalshi Monitor</h1><div class="status"><span id="dot" class="dot"></span><span id="status">Conectando a datos públicos…</span></div></div><span class="pill">Solo lectura · sin órdenes</span></div>
+ <p>Monitor experimental para Safari. Verifica siempre el mercado y sus reglas en Kalshi.</p>
+</header>
+<main>
+<section class="card wide">
+ <div class="row"><div><div class="label">Mercados Bitcoin 15 minutos</div><p id="updated">Esperando primera actualización…</p></div><div class="controls"><button id="refresh" class="primary">Actualizar</button><button id="notify">Activar alertas</button></div></div>
+ <div id="markets"><p>Buscando la serie KXBTC15M…</p></div>
+ <p class="small">Si no aparecen mercados, la API puede bloquear solicitudes desde archivos locales o haber cambiado la identificación de la serie. No se mostrarán precios inventados.</p>
+</section>
+<section class="card">
+ <div class="row"><div><div class="label">Contrato seleccionado</div><div id="selectedTitle" class="market-title">Selecciona un mercado</div></div><span id="ticker" class="pill">—</span></div>
+ <div class="grid2" style="margin-top:12px">
+  <div class="stat"><div class="label">YES · último</div><div id="yes" class="big">—</div><div id="yesSpread" class="small">Bid — / Ask —</div></div>
+  <div class="stat"><div class="label">NO · estimado</div><div id="no" class="big">—</div><div id="noSpread" class="small">Complemento de YES; confirma en Kalshi</div></div>
+ </div>
+ <div class="grid3" style="margin-top:9px">
+  <div class="stat"><div class="label">Volumen</div><div id="volume" class="big">—</div></div>
+  <div class="stat"><div class="label">Abierto</div><div id="oi" class="big">—</div></div>
+  <div class="stat"><div class="label">Cierra</div><div id="close" class="big" style="font-size:15px">—</div></div>
+ </div>
+ <p class="small">Los contratos suelen cotizar entre $0.01 y $0.99. El complemento NO = 1 − YES es solo una aproximación; spread y liquidez pueden hacer que el precio negociable difiera.</p>
+</section>
+<section class="card">
+ <div class="row"><div><div class="label">Velas de precio YES</div><p class="small">Velas construidas con observaciones recibidas por este panel</p></div><span id="candleCount" class="pill">0 velas</span></div>
+ <canvas id="chart" width="600" height="260" aria-label="Gráfico de velas"></canvas>
+ <p class="small">El gráfico empieza a formar historial desde que abres el panel; no es historial oficial ni precio spot de BTC.</p>
+</section>
+<section class="card">
+ <div class="label">Indicadores sobre precio YES</div>
+ <div class="grid3" style="margin-top:10px">
+  <div class="stat"><div class="label">RSI (14)</div><div id="rsi" class="big">—</div><div id="rsiSignal" class="small">Esperando datos</div></div>
+  <div class="stat"><div class="label">MACD</div><div id="macd" class="big" style="font-size:18px">—</div><div id="macdSignal" class="small">Esperando datos</div></div>
+  <div class="stat"><div class="label">Histograma</div><div id="hist" class="big" style="font-size:18px">—</div><div id="histSignal" class="small">—</div></div>
+ </div>
+ <p class="small">RSI/MACD aquí se calculan sobre el precio del contrato YES, no sobre el índice de Bitcoin. Son indicadores descriptivos, no predicciones.</p>
+</section>
+<section class="card">
+ <div class="label">Configuración de alertas</div>
+ <div class="controls" style="margin-top:10px">
+  <label>YES ≥ <input id="upper" type="number" min="0.01" max="0.99" step="0.01" value="0.70"></label>
+  <label>YES ≤ <input id="lower" type="number" min="0.01" max="0.99" step="0.01" value="0.30"></label>
+  <label><input id="rsiAlert" type="checkbox" checked> RSI &lt;30 / &gt;70</label>
+  <label><input id="macdAlert" type="checkbox" checked> Cruce MACD</label>
+ </div>
+ <div id="alerts"><div class="alert small">Las alertas son locales. Safari/iOS puede suspenderlas si cambias de aplicación o bloqueas el teléfono.</div></div>
+</section>
+<section class="card wide">
+ <div class="label">Estado y límites</div>
+ <p id="diagnostic">Este monitor consulta el endpoint público de mercados. Actualización aproximada cada 5 segundos mientras la página permanece activa.</p>
+ <p>El RSI y MACD requieren suficientes observaciones y se reinician al cambiar de contrato. Para velas spot BTC auténticas y actualizaciones por segundo hace falta conectar un proveedor de índice/stream fiable; esta página no finge tenerlo.</p>
+</section>
+</main>
+<footer>Herramienta informativa, no asesoría financiera. Los contratos de eventos pueden perder todo el importe pagado. Comprueba el precio, la liquidez, la hora de cierre y las reglas oficiales antes de tomar decisiones. No introduce órdenes ni necesita tu contraseña o claves API.</footer>
+<script>
+(() => {
+'use strict';
+const API='https://api.elections.kalshi.com/trade-api/v2';
+const $=id=>document.getElementById(id);
+let markets=[], selected=null, points=[], candles=[], timer=null, busy=false, lastAlert={}, notified=false, previousMacd=null;
+const fmtCents=v=>v==null?'—':(Number(v)*100).toFixed(1)+'¢';
+const fmtNum=v=>v==null?'—':Number(v).toLocaleString();
+const n=(...vals)=>{for(const v of vals){if(v!==undefined&&v!==null&&v!=='')return Number(v)}return null};
+function price(m,keys){return n(...keys.map(k=>m[k]))}
+function setStatus(s,live=false){$('status').textContent=s;$('dot').className='dot'+(live?' live':'')}
+function logAlert(msg,key){const now=Date.now();if(lastAlert[key]&&now-lastAlert[key]<60000)return;lastAlert[key]=now;const el=document.createElement('div');el.className='alert';el.textContent=new Date().toLocaleTimeString()+' · '+msg;$('alerts').prepend(el);while($('alerts').children.length>8)$('alerts').lastChild.remove();if(notified&&'Notification'in window&&Notification.permission==='granted'){try{new Notification('BTC 15m · Kalshi Monitor',{body:msg})}catch(e){}}}
+async function fetchMarkets(){
+ if(busy)return;busy=true;$('refresh').disabled=true;
+ try{
+  const url=API+'/markets?series_ticker=KXBTC15M&status=open&limit=100';
+  const r=await fetch(url,{cache:'no-store'});if(!r.ok)throw Error('API respondió HTTP '+r.status);
+  const data=await r.json();markets=Array.isArray(data.markets)?data.markets:[];
+  markets.sort((a,b)=>(Date.parse(a.close_time||a.expiration_time||'')||Infinity)-(Date.parse(b.close_time||b.expiration_time||'')||Infinity));
+  renderMarkets();
+  $('updated').textContent='Última consulta: '+new Date().toLocaleTimeString();
+  setStatus('Datos públicos recibidos',true);
+  if(selected){const fresh=markets.find(m=>m.ticker===selected.ticker);if(fresh)selectMarket(fresh,false)}
+  if(!markets.length){$('markets').innerHTML='<p>No hay contratos abiertos en KXBTC15M en esta respuesta. Prueba actualizar o revisa el mercado oficial.</p>'}
+ }catch(e){
+  setStatus('No se pudo conectar',false);
+  $('diagnostic').textContent='Error al cargar mercados: '+e.message+'. Puede ser conexión, CORS en archivo local o un cambio en la API. Intenta alojar la página en HTTPS.';
+  $('markets').innerHTML='<p>No se pudieron cargar mercados reales. No se muestran datos simulados.</p><p><a href="https://kalshi.com/markets" target="_blank" rel="noopener" style="color:#7aa7ff">Abrir mercados de Kalshi</a></p>';
+ }finally{busy=false;$('refresh').disabled=false}
+}
+function renderMarkets(){
+ const root=$('markets');root.replaceChildren();
+ markets.forEach(m=>{
+  const yes=price(m,['last_price_dollars','yes_ask_dollars','yes_bid_dollars']);
+  const vol=price(m,['volume_24h','volume']);
+  const close=m.close_time||m.expiration_time;
+  const div=document.createElement('div');div.className='market';
+  const row=document.createElement('div');row.className='row';
+  const title=document.createElement('div');title.className='market-title';title.textContent=m.title||m.ticker||'Mercado BTC';
+  const badge=document.createElement('span');badge.className='pill';badge.textContent=fmtCents(yes);
+  row.append(title,badge);
+  const info=document.createElement('div');info.className='small';info.textContent='Ticker: '+(m.ticker||'—')+' · Volumen: '+fmtNum(vol)+' · Cierre: '+(close?new Date(close).toLocaleTimeString():'—');
+  const btn=document.createElement('button');btn.textContent=selected&&selected.ticker===m.ticker?'Seleccionado':'Ver indicadores';btn.onclick=()=>selectMarket(m,true);
+  div.append(row,info,btn);root.append(div);
+ });
+}
+function selectMarket(m,reset){
+ selected=m;$('selectedTitle').textContent=m.title||m.ticker;$('ticker').textContent=m.ticker||'—';
+ if(reset){points=[];candles=[];previousMacd=null;$('alerts').innerHTML='<div class="alert small">Contrato cambiado: acumulando observaciones nuevas.</div>'}
+ renderMarkets();updateSelected(m);
+}
+function updateSelected(m){
+ const last=price(m,['last_price_dollars','last_price']);
+ const bid=price(m,['yes_bid_dollars','yes_bid']);const ask=price(m,['yes_ask_dollars','yes_ask']);
+ const vol=price(m,['volume_24h','volume']);const oi=price(m,['open_interest']);
+ $('yes').textContent=fmtCents(last);$('yesSpread').textContent='Bid '+fmtCents(bid)+' / Ask '+fmtCents(ask);
+ $('no').textContent=last==null?'—':fmtCents(1-last);$('noSpread').textContent='Complemento aproximado';
+ $('volume').textContent=fmtNum(vol);$('oi').textContent=fmtNum(oi);
+ const ct=m.close_time||m.expiration_time;$('close').textContent=ct?new Date(ct).toLocaleTimeString():'—';
+ if(last!=null&&Number.isFinite(last)){
+  const now=Date.now();points.push({t:now,p:last});if(points.length>1500)points=points.slice(-1500);
+  buildCandles();drawChart();calcIndicators();checkAlerts(last);
+ }
+}
+function buildCandles(){
+ const map=new Map();points.forEach(x=>{const t=Math.floor(x.t/15000)*15000;let c=map.get(t);if(!c){c={t,o:x.p,h:x.p,l:x.p,c:x.p};map.set(t,c)}else{c.h=Math.max(c.h,x.p);c.l=Math.min(c.l,x.p);c.c=x.p}});
+ candles=[...map.values()].slice(-40);$('candleCount').textContent=candles.length+' velas';
+}
+function drawChart(){
+ const c=$('chart'),ctx=c.getContext('2d'),w=c.width,h=c.height;ctx.clearRect(0,0,w,h);
+ ctx.strokeStyle='#283141';ctx.lineWidth=1;for(let i=1;i<5;i++){let y=i*h/5;ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(w,y);ctx.stroke()}
+ if(!candles.length){ctx.fillStyle='#9ba7ba';ctx.fillText('Esperando precios…',15,30);return}
+ let vals=candles.flatMap(x=>[x.h,x.l]);let min=Math.min(...vals)-.02,max=Math.max(...vals)+.02;if(max-min<.02){min-=.01;max+=.01}
+ const y=v=>h-18-(v-min)/(max-min)*(h-36),step=w/candles.length,cw=Math.max(3,step*.52);
+ candles.forEach((x,i)=>{let xx=i*step+step/2;ctx.strokeStyle=x.c>=x.o?'#36d399':'#ff6b78';ctx.fillStyle=ctx.strokeStyle;ctx.beginPath();ctx.moveTo(xx,y(x.h));ctx.lineTo(xx,y(x.l));ctx.stroke();let top=Math.min(y(x.o),y(x.c)),height=Math.max(2,Math.abs(y(x.o)-y(x.c)));ctx.fillRect(xx-cw/2,top,cw,height)});
+ ctx.fillStyle='#9ba7ba';ctx.font='12px sans-serif';ctx.fillText((min*100).toFixed(0)+'¢',5,h-4);ctx.fillText((max*100).toFixed(0)+'¢',5,14);
+}
+function ema(vals,period){let out=[];if(!vals.length)return out;const k=2/(period+1);let e=vals[0];out.push(e);for(let i=1;i<vals.length;i++){e=vals[i]*k+e*(1-k);out.push(e)}return out}
+function calcIndicators(){
+ const vals=points.map(x=>x.p);
+ if(vals.length<2){$('rsi').textContent='—';$('macd').textContent='—';return}
+ if(vals.length>=15){
+  let gains=0,losses=0;for(let i=vals.length-14;i<vals.length;i++){let d=vals[i]-vals[i-1];if(d>0)gains+=d;else losses-=d}
+  const rs=losses===0?Infinity:gains/losses;const rsi=100-100/(1+rs);
+  $('rsi').textContent=Number.isFinite(rsi)?rsi.toFixed(1):'100';$('rsiSignal').textContent=rsi<30?'Sobreventa (referencia)':rsi>70?'Sobrecompra (referencia)':'Zona intermedia';
+  if($('rsiAlert').checked&&(rsi<30||rsi>70))logAlert('RSI '+rsi.toFixed(1)+' en el contrato YES','rsi'+(rsi<30?'low':'high'));
+ }else{$('rsi').textContent='—';$('rsiSignal').textContent='Necesita 15 observaciones'}
+ if(vals.length>=26){
+  const e12=ema(vals,12),e26=ema(vals,26),m=e12.map((v,i)=>v-e26[i]),sig=ema(m.slice(25),9),macd=m[m.length-1],signal=sig[sig.length-1],hist=macd-signal;
+  $('macd').textContent=(macd*100).toFixed(2)+'¢';$('macdSignal').textContent='Señal '+(signal*100).toFixed(2)+'¢';
+  $('hist').textContent=(hist*100).toFixed(2)+'¢';$('histSignal').textContent=hist>=0?'MACD sobre señal':'MACD bajo señal';
+  if(previousMacd!==null&&$('macdAlert').checked&&((previousMacd<=0&&hist>0)||(previousMacd>=0&&hist<0)))logAlert('Cruce MACD en YES: histograma '+(hist>0?'positivo':'negativo'),'macd'+(hist>0?'up':'down'));
+  previousMacd=hist;
+ }else{$('macd').textContent='—';$('macdSignal').textContent='Necesita 26 observaciones';$('hist').textContent='—';$('histSignal').textContent='—'}
+}
+function checkAlerts(v){
+ const hi=Number($('upper').value),lo=Number($('lower').value);
+ if(v>=hi)logAlert('YES alcanzó '+fmtCents(v),'upper');
+ if(v<=lo)logAlert('YES cayó a '+fmtCents(v),'lower');
+}
+$('refresh').addEventListener('click',fetchMarkets);
+$('notify').addEventListener('click',async()=>{
+ if(!('Notification'in window)){logAlert('Este navegador no ofrece notificaciones del sistema; las alertas aparecerán dentro de la página.','no-notifications');return}
+ try{const p=await Notification.requestPermission();notified=p==='granted';$('notify').textContent=notified?'Alertas activadas':'Permiso no concedido';if(notified)logAlert('Notificaciones activadas mientras Safari lo permita.','enabled')}catch(e){logAlert('No se pudo activar el permiso de notificaciones.','permission')}
+});
+fetchMarkets();timer=setInterval(fetchMarkets,5000);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)fetchMarkets()});
+})();
+</script>
+</body>
+</html>
