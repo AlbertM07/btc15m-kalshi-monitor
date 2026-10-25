@@ -276,7 +276,9 @@ async function fetchMarkets() {
   }
 }
 
-function drawChart() {
+function drawChart();
+updateIndicators();
+updateBotSignal();
   const canvas = $("chart");
   const ctx = canvas.getContext("2d");
   const rect = canvas.getBoundingClientRect();
