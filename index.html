@@ -376,6 +376,36 @@ if (vals.length < 35) {
     updateBotSignal();
 }
 
+let lastRecordedSignal = "";
+let botSignalHistory = [];
+
+function recordBotSignal(signalName, rsi, macd, macdSignal) {
+  if (signalName === lastRecordedSignal) return;
+
+  lastRecordedSignal = signalName;
+
+  const now = new Date().toLocaleTimeString();
+  botSignalHistory.unshift({
+    time: now,
+    name: signalName,
+    rsi: rsi.toFixed(1),
+    macd: macd.toFixed(2),
+    signal: macdSignal.toFixed(2)
+  });
+
+  botSignalHistory = botSignalHistory.slice(0, 20);
+
+  const historyElement = $("bot-history");
+  if (historyElement) {
+    historyElement.innerHTML = botSignalHistory.map(item =>
+      `<div style="padding:6px 0;border-bottom:1px solid #374151;">
+        <strong>${item.name}</strong> · ${item.time}<br>
+        RSI: ${item.rsi} · MACD: ${item.macd}¢ · Señal: ${item.signal}¢
+      </div>`
+    ).join("");
+  }
+}
+
 function updateBotSignal() {
   const panel = $("bot-signal");
   const detail = $("bot-detail");
