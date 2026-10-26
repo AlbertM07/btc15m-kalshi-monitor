@@ -364,6 +364,49 @@ function updateIndicators() {
     (macd>signal ? "MACD por encima de señal" : "MACD por debajo de señal");
 }
 
+function updateBotSignal() {
+  const panel = $("bot-signal");
+  const detail = $("bot-detail");
+
+  const rsiText = $("rsi").textContent;
+  const macdText = $("signal").textContent;
+
+  const rsi = parseFloat(rsiText);
+  const match = macdText.match(/Señal:\s*(-?[\d.]+)¢/);
+
+  if (!Number.isFinite(rsi) || !match) {
+    panel.textContent = "🟡 Esperando indicadores...";
+    panel.style.color = "#facc15";
+    detail.textContent = "Se necesitan más datos para evaluar RSI y MACD.";
+    return;
+  }
+
+  const macd = parseFloat($("macd").textContent);
+  const signal = parseFloat(match[1]);
+
+  if (!Number.isFinite(macd) || !Number.isFinite(signal)) {
+    panel.textContent = "🟡 Esperando indicadores...";
+    panel.style.color = "#facc15";
+    detail.textContent = "No se pudieron leer todos los indicadores.";
+    return;
+  }
+
+  if (rsi > 50 && macd > signal) {
+    panel.textContent = "🟢 SEÑAL ALCISTA";
+    panel.style.color = "#4ade80";
+    detail.textContent = "RSI > 50 y MACD por encima de su señal.";
+  } else if (rsi < 50 && macd < signal) {
+    panel.textContent = "🔴 SEÑAL BAJISTA";
+    panel.style.color = "#f87171";
+    detail.textContent = "RSI < 50 y MACD por debajo de su señal.";
+  } else {
+    panel.textContent = "🟡 ESPERAR";
+    panel.style.color = "#facc15";
+    detail.textContent = "RSI y MACD no confirman la misma dirección.";
+  }
+}
+
+
 $("refresh").addEventListener("click", fetchMarkets);
 window.addEventListener("resize", drawChart);
 
