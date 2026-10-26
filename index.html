@@ -362,6 +362,7 @@ function updateIndicators() {
   $("macd").textContent = (macd*100).toFixed(2)+"¢";
   $("signal").textContent = "Señal: "+(signal*100).toFixed(2)+"¢ · "+
     (macd>signal ? "MACD por encima de señal" : "MACD por debajo de señal");
+    updateBotSignal();
 }
 
 function updateBotSignal() {
