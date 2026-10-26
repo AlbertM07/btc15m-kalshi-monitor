@@ -347,11 +347,22 @@ function updateIndicators() {
       rsi<=30 ? "Zona baja (sobreventa orientativa)" : "Zona intermedia";
   }
 
-  if (vals.length < 35) {
+  
+if (vals.length < 35) {
     $("macd").textContent = "—";
     $("signal").textContent = "Se necesitan al menos 35 observaciones.";
+    const panel = $("bot-signal");
+    const detail = $("bot-detail");
+    if (panel) {
+      panel.textContent = "🟡 RECOPILANDO DATOS";
+      panel.style.color = "#facc15";
+    }
+    if (detail) {
+      detail.textContent = "Observaciones disponibles: " + vals.length + " de 35. Mantén abierto el monitor.";
+    }
     return;
   }
+
   const e12=ema(vals,12), e26=ema(vals,26);
   const line=vals.map((_,i)=>
     e12[i]===null || e26[i]===null ? null : e12[i]-e26[i]);
