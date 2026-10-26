@@ -405,7 +405,41 @@ function recordBotSignal(signalName, rsi, macd, macdSignal) {
     ).join("");
   }
 }
+let botSignalStartTime = null;
+let botCurrentSignal = "";
 
+function updateBotDuration(signalName) {
+  const durationElement = document.getElementById("bot-duration");
+  if (!durationElement) return;
+
+  const now = Date.now();
+
+  if (signalName !== botCurrentSignal) {
+    botCurrentSignal = signalName;
+    botSignalStartTime = now;
+  }
+
+  if (signalName === "ESPERANDO") {
+    durationElement.textContent = "Esperando una señal válida...";
+    return;
+  }
+
+  const elapsed = Math.floor((now - botSignalStartTime) / 1000);
+  const minutes = Math.floor(elapsed / 60);
+  const seconds = elapsed % 60;
+
+  durationElement.textContent =
+    "Señal activa desde: " +
+    new Date(botSignalStartTime).toLocaleTimeString() +
+    " · Tiempo activa: " +
+    minutes + " min " + seconds + " s";
+}
+
+setInterval(() => {
+  if (botCurrentSignal) {
+    updateBotDuration(botCurrentSignal);
+  }
+}, 1000);
 function updateBotSignal() {
   const panel = $("bot-signal");
   const detail = $("bot-detail");
