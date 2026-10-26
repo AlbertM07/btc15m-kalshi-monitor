@@ -433,19 +433,25 @@ function updateBotSignal() {
     return;
   }
 
-  if (rsi > 50 && macd > signal) {
-    panel.textContent = "🟢 SEÑAL ALCISTA";
-    panel.style.color = "#4ade80";
-    detail.textContent = "RSI > 50 y MACD por encima de su señal.";
-  } else if (rsi < 50 && macd < signal) {
-    panel.textContent = "🔴 SEÑAL BAJISTA";
-    panel.style.color = "#f87171";
-    detail.textContent = "RSI < 50 y MACD por debajo de su señal.";
-  } else {
-    panel.textContent = "🟡 ESPERAR";
-    panel.style.color = "#facc15";
-    detail.textContent = "RSI y MACD no confirman la misma dirección.";
-  }
+let signalName = "ESPERAR";
+
+if (rsi > 50 && macd > signal) {
+  panel.textContent = "🟢 SEÑAL ALCISTA";
+  panel.style.color = "#4ade80";
+  detail.textContent = "RSI > 50 y MACD por encima de su señal.";
+  signalName = "ALCISTA";
+} else if (rsi < 50 && macd < signal) {
+  panel.textContent = "🔴 SEÑAL BAJISTA";
+  panel.style.color = "#f87171";
+  detail.textContent = "RSI < 50 y MACD por debajo de su señal.";
+  signalName = "BAJISTA";
+} else {
+  panel.textContent = "🟡 ESPERAR";
+  panel.style.color = "#facc15";
+  detail.textContent = "RSI y MACD no confirman la misma dirección.";
+}
+
+recordBotSignal(signalName, rsi, macd, signal);
 }
 
 
