@@ -489,11 +489,68 @@ async function fetchKalshi() {
 async function fetchBTC() {
   if (btcBusy) return;
   btcBusy = true;
+
   try {
     const response = await fetch(BINANCE_API, {
-      headers:{"Accept":"application/json"},
-      cache:"no-store"
+      headers: { "Accept": "application/json" },
+      cache: "no-store"
     });
+
+    if (!response.ok) {
+      throw new Error("Coinbase HTTP " + response.status);
+    }
+
+    const raw = await response.json();
+
+    if (!Array.isArray(raw) || raw.length < 35) {
+      throw new Error("No hay suficientes velas de BTC.");
+    }
+
+    // Coinbase: [hora, mínimo, máximo, apertura, cierre, volumen]
+    btcCandles = raw.map(k => ({
+      time: Number(k[0]) * 1000,
+      low: Number(k[1]),
+      high: Number(k[2]),
+      open: Number(k[3]),
+      close: Number(k[4]),
+      volume: Number(k[5])
+    }))
+    .filter(c =>
+      Number.isFinite(c.time) &&
+      Number.isFinite(c.low) &&
+      Number.isFinite(c.high) &&
+      Number.isFinite(c.open) &&
+      Number.isFinite(c.close) &&
+      c.close > 0
+    )
+    .sort((a, b) => a.time - b.time);
+
+    if (btcCandles.length < 35) {
+      throw new Error("Quedaron menos de 35 velas válidas.");
+    }
+
+    btcLastUpdate = Date.now();
+
+    renderBTC();
+    calculateSignal();
+
+    setMessage(
+      "Bitcoin actualizado desde Coinbase. Kalshi se consulta por separado."
+    );
+    setStatus("Datos BTC actualizados", true);
+
+  } catch (error) {
+    setStatus("Error de datos");
+    setMessage(
+      "No se pudieron cargar las velas de BTC: " +
+      error.message +
+      ". Comprueba la conexión e inténtalo de nuevo."
+    );
+  } finally {
+    btcBusy = false;
+  }
+}
+
     if (!response.ok) throw new Error("Binance HTTP " + response.status);
 
     const raw = await response.json();
