@@ -4,152 +4,357 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>BTC 15M Monitor</title>
+<meta name="theme-color" content="#0b1020">
+<title>BTC SEÑALES VIP</title>
 <style>
-:root{color-scheme:dark;--bg:#0b1020;--card:#141d31;--line:#293750;--text:#edf3ff;--muted:#9eacc5;--green:#35d49a;--red:#ff6b7d;--blue:#70a7ff;--yellow:#ffd166}
-*{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,sans-serif;padding:16px}
-main{max-width:850px;margin:auto}
-header{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:18px}
-h1{font-size:25px;margin:0}
-h2{font-size:16px;margin:0 0 14px}
-p{margin:6px 0}
-.muted{color:var(--muted);font-size:13px}
-.status{padding:7px 10px;border-radius:20px;background:#26364e;font-size:12px}
-.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
-.card{background:var(--card);border:1px solid var(--line);border-radius:15px;padding:16px;margin-bottom:12px;min-width:0}
-.label{font-size:12px;color:var(--muted);margin-bottom:8px}
-.price{font-size:clamp(27px,6vw,36px);font-weight:750;letter-spacing:-1px}
-.green{color:var(--green)}.red{color:var(--red)}.blue{color:var(--blue)}.yellow{color:var(--yellow)}
-.details{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
-.value{font-weight:650;overflow-wrap:anywhere}
-button{background:var(--blue);color:#07111f;border:0;border-radius:10px;padding:11px 15px;font-weight:700;font-size:14px}
-button:disabled{opacity:.6}
-canvas{width:100%;height:210px;display:block}
-.bar{height:7px;background:#26364e;border-radius:8px;overflow:hidden;margin-top:8px}
-.fill{height:100%;width:0;background:var(--blue);transition:width .3s}
-#message{padding:11px;border-radius:10px;background:#202d43;font-size:13px;overflow-wrap:anywhere}
-#alert{display:none;padding:12px;border-radius:10px;margin-bottom:12px;background:#2b2940}
-footer{margin-top:15px;line-height:1.6}
-@media(max-width:430px){body{padding:11px}.card{padding:13px}.grid{gap:9px}.details{gap:10px}h1{font-size:22px}}
+:root {
+  color-scheme: dark;
+  --bg:#0b1020;
+  --card:#141d31;
+  --line:#293750;
+  --text:#edf3ff;
+  --muted:#9eacc5;
+  --green:#35d49a;
+  --red:#ff6b7d;
+  --yellow:#ffd166;
+  --blue:#70a7ff;
+}
+* { box-sizing:border-box }
+body {
+  margin:0; padding:14px;
+  background:var(--bg); color:var(--text);
+  font-family:system-ui,-apple-system,sans-serif;
+}
+main { max-width:850px; margin:auto }
+header {
+  display:flex; justify-content:space-between;
+  align-items:center; gap:12px; flex-wrap:wrap;
+  margin-bottom:16px;
+}
+h1 { font-size:26px; margin:0; letter-spacing:-.7px }
+h2 { font-size:16px; margin:0 0 14px }
+p { margin:6px 0 }
+.muted { color:var(--muted); font-size:13px }
+.status {
+  padding:7px 10px; border-radius:20px;
+  background:#26364e; font-size:12px;
+}
+.card {
+  background:var(--card); border:1px solid var(--line);
+  border-radius:15px; padding:15px; margin-bottom:12px;
+  min-width:0;
+}
+.grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px }
+.label { font-size:12px; color:var(--muted); margin-bottom:7px }
+.value { font-size:20px; font-weight:750; overflow-wrap:anywhere }
+.big { font-size:clamp(25px,6vw,35px); font-weight:800; letter-spacing:-.7px }
+.green { color:var(--green) }
+.red { color:var(--red) }
+.yellow { color:var(--yellow) }
+.blue { color:var(--blue) }
+.row {
+  display:flex; justify-content:space-between;
+  align-items:center; gap:10px; flex-wrap:wrap;
+}
+.signal {
+  border:1px solid var(--line); border-radius:14px;
+  padding:16px; margin-bottom:12px; background:#111a2d;
+}
+.signal-name { font-size:clamp(24px,6vw,34px); font-weight:850 }
+.signal-dot {
+  display:inline-block; width:12px; height:12px;
+  border-radius:50%; background:var(--yellow);
+  margin-right:7px;
+}
+.details { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px }
+.bar { height:8px; background:#26364e; border-radius:8px; overflow:hidden; margin-top:8px }
+.fill { height:100%; width:0; background:var(--blue); transition:width .3s }
+button {
+  background:var(--blue); color:#07111f; border:0;
+  border-radius:10px; padding:11px 15px;
+  font-weight:750; font-size:14px; cursor:pointer;
+}
+button:disabled { opacity:.55; cursor:wait }
+.secondary { background:#26364e; color:var(--text) }
+#alert {
+  display:none; padding:12px; border-radius:10px;
+  margin-bottom:12px; background:#2b2940; font-size:13px;
+}
+#message {
+  padding:11px; border-radius:10px;
+  background:#202d43; font-size:13px; overflow-wrap:anywhere;
+}
+table { width:100%; border-collapse:collapse; font-size:13px }
+th,td { padding:9px 5px; text-align:left; border-bottom:1px solid var(--line) }
+th { color:var(--muted); font-weight:600 }
+footer { margin:16px 0; line-height:1.6 }
+.small { font-size:12px; color:var(--muted); line-height:1.5 }
+.pill { background:#26364e; padding:5px 8px; border-radius:8px; font-size:12px }
+@media(max-width:430px) {
+  body { padding:10px }
+  .card,.signal { padding:12px }
+  h1 { font-size:22px }
+  .grid { gap:8px }
+  .details { gap:10px }
+  th,td { padding:8px 3px; font-size:12px }
+}
 </style>
 </head>
 <body>
 <main>
 <header>
   <div>
-    <h1>₿ BTC 15M Monitor</h1>
-    <p class="muted">Kalshi · Solo lectura</p>
+    <h1>₿ BTC SEÑALES VIP</h1>
+    <p class="muted">Bitcoin · Kalshi · Análisis de 15 minutos</p>
   </div>
   <span id="status" class="status">Conectando…</span>
 </header>
 
 <div id="alert"></div>
 
+<section class="signal">
+  <div class="label">SEÑAL PRINCIPAL · DIRECCIÓN ESTIMADA</div>
+  <div class="row">
+    <div id="profitSignal" class="signal-name yellow">
+      <span class="signal-dot"></span>RECOPILANDO DATOS
+    </div>
+    <span id="signalTime" class="pill">Sin señal</span>
+  </div>
+  <p id="signalDetail" class="muted">
+    Esperando velas de Bitcoin e información del mercado.
+  </p>
+  <p id="signalDuration" class="small">Duración de la señal: —</p>
+</section>
+
 <div class="grid">
   <section class="card">
-    <div class="label">YES · Mejor precio de venta</div>
-    <div id="yes" class="price green">—</div>
-    <p id="yesBid" class="muted">Compra: —</p>
+    <div class="label">PRECIO ACTUAL DE BITCOIN</div>
+    <div id="btcPrice" class="big">—</div>
+    <p id="btcChange" class="muted">Cambio en 3 minutos: —</p>
   </section>
   <section class="card">
-    <div class="label">NO · Mejor precio de venta</div>
-    <div id="no" class="price red">—</div>
-    <p id="noBid" class="muted">Compra: —</p>
+    <div class="label">IMPULSO</div>
+    <div id="impulse" class="big">—</div>
+    <p id="impulseText" class="muted">Esperando datos</p>
+  </section>
+</div>
+
+<div class="grid">
+  <section class="card">
+    <div class="label">MEJOR MOMENTO</div>
+    <div id="bestMoment" class="value yellow">ESPERAR</div>
+    <p id="bestDetail" class="muted">Comprobando las condiciones de entrada.</p>
+  </section>
+  <section class="card">
+    <div class="label">CONFIANZA ORIENTATIVA</div>
+    <div id="confidence" class="big">—</div>
+    <div class="bar"><div id="confidenceBar" class="fill"></div></div>
+    <p id="confidenceText" class="muted">No es una probabilidad validada.</p>
   </section>
 </div>
 
 <section class="card">
-  <h2>Mercado activo</h2>
-  <p id="title" class="value">Esperando datos…</p>
-  <p id="ticker" class="muted">—</p>
+  <h2>BTC objetivo</h2>
+  <div id="btcTarget" class="big blue">—</div>
+  <p id="btcTargetDetail" class="muted">
+    Estimación técnica; no es una predicción garantizada.
+  </p>
+</section>
+
+<section class="card">
+  <h2>Contrato de Kalshi</h2>
+  <p id="marketTitle" class="value">Esperando mercado…</p>
+  <p id="marketTicker" class="muted">—</p>
+  <div class="grid" style="margin-top:14px">
+    <div>
+      <div class="label">YES · Precio de venta</div>
+      <div id="yesAsk" class="value green">—</div>
+      <p id="yesBid" class="muted">Compra: —</p>
+    </div>
+    <div>
+      <div class="label">NO · Precio de venta</div>
+      <div id="noAsk" class="value red">—</div>
+      <p id="noBid" class="muted">Compra: —</p>
+    </div>
+  </div>
   <div class="details" style="margin-top:16px">
-    <div><div class="label">Precio objetivo BTC</div><div id="strike" class="value">—</div></div>
-    <div><div class="label">Último precio negociado</div><div id="last" class="value">—</div></div>
+    <div><div class="label">Precio objetivo del mercado</div><div id="strike" class="value">—</div></div>
+    <div><div class="label">Último precio negociado</div><div id="lastPrice" class="value">—</div></div>
     <div><div class="label">Volumen 24 h</div><div id="volume" class="value">—</div></div>
     <div><div class="label">Interés abierto</div><div id="interest" class="value">—</div></div>
-    <div><div class="label">Hora de cierre indicada</div><div id="close" class="value">—</div></div>
+    <div><div class="label">Cierre indicado</div><div id="closeTime" class="value">—</div></div>
     <div><div class="label">Última actualización</div><div id="updated" class="value">—</div></div>
   </div>
 </section>
 
 <section class="card">
-  <h2>Historial de cotización YES</h2>
-  <canvas id="chart" height="210"></canvas>
-  <p id="samples" class="muted">0 observaciones recopiladas</p>
+  <h2>Mejor momento de entrada</h2>
+  <div class="grid">
+    <div>
+      <div class="label">Dirección técnica</div>
+      <div id="direction" class="value yellow">ESPERAR</div>
+    </div>
+    <div>
+      <div class="label">Contrato que coincide con la dirección*</div>
+      <div id="suggestedContract" class="value">—</div>
+    </div>
+    <div>
+      <div class="label">Precio de referencia de entrada</div>
+      <div id="entryPrice" class="value">—</div>
+    </div>
+    <div>
+      <div class="label">Control de entrada tardía</div>
+      <div id="entryStatus" class="value yellow">—</div>
+    </div>
+  </div>
+  <p id="entryExplanation" class="muted" style="margin-top:12px">
+    La dirección por sí sola no confirma una buena entrada.
+  </p>
+  <p class="small">
+    *La correspondencia UP=YES y DOWN=NO solo aplica si el contrato
+    seleccionado representa esa misma condición. Comprueba el título y
+    las reglas del mercado antes de operar.
+  </p>
+</section>
+
+<section class="card">
+  <h2>Objetivos de ganancia del contrato</h2>
+  <p class="muted">Calculados desde el precio de referencia de entrada, no desde el precio de BTC.</p>
+  <div class="details">
+    <div><div class="label">Entrada de referencia</div><div id="targetEntry" class="value">—</div></div>
+    <div><div class="label">Objetivo +20 %</div><div id="target20" class="value green">—</div></div>
+    <div><div class="label">Objetivo +30 %</div><div id="target30" class="value green">—</div></div>
+    <div><div class="label">Objetivo +50 %</div><div id="target50" class="value green">—</div></div>
+  </div>
+  <p id="targetNote" class="small" style="margin-top:12px">
+    Los objetivos son cálculos teóricos sobre el precio del contrato.
+    No incluyen comisiones, deslizamiento ni garantías de ejecución.
+  </p>
 </section>
 
 <div class="grid">
   <section class="card">
-    <div class="label">RSI (14 observaciones)</div>
-    <div id="rsi" class="price">—</div>
+    <div class="label">RSI (14 velas de BTC, 1 min)</div>
+    <div id="rsi" class="big">—</div>
     <div class="bar"><div id="rsiBar" class="fill"></div></div>
-    <p id="rsiText" class="muted">Esperando observaciones…</p>
+    <p id="rsiText" class="muted">Esperando velas suficientes.</p>
   </section>
   <section class="card">
     <div class="label">MACD (12, 26, 9)</div>
-    <div id="macd" class="price">—</div>
-    <p id="signal" class="muted">Se necesitan más observaciones.</p>
+    <div id="macd" class="big">—</div>
+    <p id="macdText" class="muted">Esperando velas suficientes.</p>
   </section>
 </div>
 
 <section class="card">
+  <h2>Historial de señales</h2>
+  <div style="overflow-x:auto">
+    <table>
+      <thead><tr><th>Hora</th><th>Señal</th><th>Confianza</th><th>BTC</th></tr></thead>
+      <tbody id="signalHistory">
+        <tr><td colspan="4">Todavía no hay señales.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="card">
+  <h2>Historial de precio BTC</h2>
+  <div id="btcHistory" class="small">Recopilando velas de BTC…</div>
+</section>
+
+<section class="card">
   <h2>Estado de conexión</h2>
-  <p id="message" role="status">Iniciando consulta a Kalshi…</p>
-  <p class="muted">La consulta se repite cada 15 segundos mientras esta página esté abierta.</p>
-  <button id="refresh">Actualizar ahora</button>
+  <p id="message" role="status">Iniciando consultas…</p>
+  <div class="row" style="margin-top:12px">
+    <button id="refresh">Actualizar ahora</button>
+    <button id="notify" class="secondary">Activar notificaciones</button>
+  </div>
+  <p class="small" style="margin-top:10px">
+    Kalshi se consulta aproximadamente cada 15 segundos y BTC cada 10 segundos.
+    Mantén abierta esta página para recibir actualizaciones.
+  </p>
 </section>
 
 <footer class="muted">
-  Los precios son cotizaciones de mercado, no garantías de probabilidad o beneficio.
-  RSI y MACD usan las observaciones recopiladas por este monitor, no velas históricas oficiales.
-  No se envían órdenes ni se realizan operaciones.
+  Este monitor es informativo y no ejecuta operaciones. La confianza es un
+  indicador heurístico, no una probabilidad estadística validada. El objetivo
+  de BTC es una estimación técnica basada en el movimiento reciente. Los
+  datos pueden retrasarse o fallar. Prueba las señales antes de arriesgar dinero.
 </footer>
 </main>
 
 <script>
 "use strict";
 
-const API = "https://kalshi-btc-monitor.jamc-mendoza.workers.dev/markets";
+/*
+ * BTC SEÑALES VIP
+ * Kalshi: precios de contratos.
+ * Binance: velas públicas BTC/USDT de 1 minuto.
+ * Sin ejecución automática de operaciones.
+ */
+
+const KALSHI_API =
+  "https://kalshi-btc-monitor.jamc-mendoza.workers.dev/markets";
 const SERIES = "KXBTC15M";
-const INTERVAL = 15000;
-const MAX_POINTS = 240;
+const BINANCE_API =
+  "https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=1m&limit=60";
+
+const KALSHI_INTERVAL = 15000;
+const BTC_INTERVAL = 10000;
+const ENTRY_CEILING = 0.59;
 
 const $ = id => document.getElementById(id);
-let history = [];
-let previousYes = null;
-let loading = false;
-let timer = null;
 
-function number(value) {
+let market = null;
+let btcCandles = [];
+let btcLastUpdate = 0;
+let marketLastUpdate = 0;
+let kalshiBusy = false;
+let btcBusy = false;
+let notificationEnabled = false;
+
+let currentDirection = "ESPERAR";
+let currentConfidence = 0;
+let signalStartedAt = null;
+let signalHistory = [];
+let targetEntry = null;
+let targetSide = null;
+let reachedTargets = new Set();
+let lastSignalKey = "";
+let lastTargetAlert = "";
+
+function num(value) {
+  if (value === null || value === undefined || value === "") return null;
   const n = Number(value);
   return Number.isFinite(n) ? n : null;
 }
 
-function dollars(value) {
-  const n = number(value);
-  return n === null ? "—" :
-    new Intl.NumberFormat("en-US", {
-      style:"currency", currency:"USD"
-    }).format(n);
+function firstNum(...values) {
+  for (const v of values) {
+    const n = num(v);
+    if (n !== null) return n;
+  }
+  return null;
+}
+
+function money(value) {
+  const n = num(value);
+  return n === null ? "—" : "$" + n.toLocaleString("en-US", {
+    minimumFractionDigits:2, maximumFractionDigits:2
+  });
 }
 
 function cents(value) {
-  const n = number(value);
+  const n = num(value);
   return n === null ? "—" : (n * 100).toFixed(1) + "¢";
 }
 
-function quantity(value) {
-  const n = number(value);
-  return n === null ? "—" :
-    new Intl.NumberFormat("en-US",{maximumFractionDigits:0}).format(n);
-}
-
-function time(value) {
+function clock(value) {
   if (!value) return "—";
   const d = new Date(value);
   return Number.isNaN(d.getTime()) ? "—" :
-    d.toLocaleString("es-US",{dateStyle:"short",timeStyle:"medium"});
+    d.toLocaleString("es-US", {dateStyle:"short",timeStyle:"medium"});
 }
 
 function setStatus(text, good=false) {
@@ -161,355 +366,588 @@ function setMessage(text) {
   $("message").textContent = text;
 }
 
-function firstNumber(...values) {
-  for (const value of values) {
-    const n = number(value);
-    if (n !== null) return n;
+function notify(title, body) {
+  if (!notificationEnabled || !("Notification" in window)) return;
+  if (Notification.permission === "granted") {
+    try { new Notification(title, {body}); } catch (_) {}
   }
-  return null;
+}
+
+function normalizeContractPrice(value) {
+  const n = num(value);
+  if (n === null) return null;
+  /*
+   * The worker may return dollar prices (0.55) or cent prices (55).
+   * Values above 1 are interpreted as cents.
+   */
+  return n > 1 ? n / 100 : n;
 }
 
 function renderMarket(m) {
-  const yesAsk = firstNumber(m.yes_ask_dollars, m.yes_ask);
-  const yesBid = firstNumber(m.yes_bid_dollars, m.yes_bid);
-  const noAsk = firstNumber(m.no_ask_dollars, m.no_ask);
-  const noBid = firstNumber(m.no_bid_dollars, m.no_bid);
+  market = m;
 
-  $("yes").textContent = cents(yesAsk);
+  const yesAsk = normalizeContractPrice(firstNum(
+    m.yes_ask_dollars, m.yes_ask
+  ));
+  const yesBid = normalizeContractPrice(firstNum(
+    m.yes_bid_dollars, m.yes_bid
+  ));
+  const noAsk = normalizeContractPrice(firstNum(
+    m.no_ask_dollars, m.no_ask
+  ));
+  const noBid = normalizeContractPrice(firstNum(
+    m.no_bid_dollars, m.no_bid
+  ));
+
+  $("yesAsk").textContent = cents(yesAsk);
   $("yesBid").textContent = "Compra: " + cents(yesBid);
-  $("no").textContent = cents(noAsk);
+  $("noAsk").textContent = cents(noAsk);
   $("noBid").textContent = "Compra: " + cents(noBid);
 
-  $("title").textContent = m.title || m.ticker || "Mercado BTC 15M";
-  $("ticker").textContent = m.ticker || "—";
-  $("strike").textContent = dollars(m.floor_strike);
-  $("last").textContent = cents(firstNumber(m.last_price_dollars, m.last_price));
-  $("volume").textContent = quantity(firstNumber(m.volume_24h_fp, m.volume_24h));
-  $("interest").textContent = quantity(m.open_interest_fp || m.open_interest);
-  $("close").textContent = time(m.close_time);
+  $("marketTitle").textContent = m.title || m.ticker || "Mercado BTC 15M";
+  $("marketTicker").textContent = m.ticker || "—";
+  $("strike").textContent = money(firstNum(m.floor_strike, m.strike_price));
+  $("lastPrice").textContent = cents(normalizeContractPrice(firstNum(
+    m.last_price_dollars, m.last_price
+  )));
+  $("volume").textContent = formatQuantity(firstNum(m.volume_24h_fp, m.volume_24h));
+  $("interest").textContent = formatQuantity(firstNum(m.open_interest_fp, m.open_interest));
+  $("closeTime").textContent = clock(m.close_time);
   $("updated").textContent = new Date().toLocaleTimeString("es-US");
 
-  if (yesAsk !== null) {
-    const now = Date.now();
-    const last = history[history.length - 1];
-    if (!last || now - last.t >= 10000) {
-      history.push({t:now, y:yesAsk});
-      if (history.length > MAX_POINTS) history.shift();
-      drawChart();
-      updateIndicators();
-    }
-    if (previousYes !== null && yesAsk !== previousYes) {
-      const delta = (yesAsk - previousYes) * 100;
-      const alert = $("alert");
-      alert.style.display = "block";
-      alert.textContent =
-        "Cambio en YES: " + (delta > 0 ? "+" : "") +
-        delta.toFixed(1) + "¢ · " + new Date().toLocaleTimeString("es-US");
-      alert.style.color = delta > 0 ? "#35d49a" : "#ff6b7d";
-    }
-    previousYes = yesAsk;
-  }
+  marketLastUpdate = Date.now();
+  updateEntryAndTargets();
 }
 
-async function fetchMarkets() {
-  if (loading) return;
-  loading = true;
-  $("refresh").disabled = true;
-  setStatus("Consultando…");
+function formatQuantity(value) {
+  const n = num(value);
+  return n === null ? "—" :
+    n.toLocaleString("en-US", {maximumFractionDigits:0});
+}
 
+function pickMarket(markets) {
+  const now = Date.now();
+  const candidates = markets.filter(m => {
+    const status = String(m.status || "").toLowerCase();
+    if (status !== "active" && status !== "open") return false;
+    const close = Date.parse(m.close_time || "");
+    return !Number.isFinite(close) || close > now;
+  });
+
+  if (!candidates.length) return markets[0] || null;
+
+  /*
+   * Prefer the market that closes soonest in the future.
+   * If close_time is unavailable, use the newest open/created time.
+   */
+  candidates.sort((a,b) => {
+    const ac = Date.parse(a.close_time || "");
+    const bc = Date.parse(b.close_time || "");
+    if (Number.isFinite(ac) && Number.isFinite(bc)) return ac - bc;
+    const ao = Date.parse(a.open_time || a.created_time || "") || 0;
+    const bo = Date.parse(b.open_time || b.created_time || "") || 0;
+    return bo - ao;
+  });
+  return candidates[0];
+}
+
+async function fetchKalshi() {
+  if (kalshiBusy) return;
+  kalshiBusy = true;
   try {
-    const url = new URL(API);
+    const url = new URL(KALSHI_API);
     url.searchParams.set("series_ticker", SERIES);
     url.searchParams.set("status", "open");
     url.searchParams.set("limit", "100");
 
     const response = await fetch(url.toString(), {
-      method:"GET",
       headers:{"Accept":"application/json"},
       cache:"no-store"
     });
-
-    if (!response.ok) {
-      throw new Error("HTTP " + response.status +
-        (response.status === 429 ? " · demasiadas solicitudes" : ""));
-    }
+    if (!response.ok) throw new Error("Kalshi HTTP " + response.status);
 
     const data = await response.json();
-    if (!Array.isArray(data.markets) || data.markets.length === 0) {
-      throw new Error("La API respondió, pero no encontró mercados abiertos.");
+    if (!Array.isArray(data.markets) || !data.markets.length) {
+      throw new Error("La API no devolvió mercados.");
     }
 
-    const now = Date.now();
-    const active = data.markets
-      .filter(m => m.status === "active" || m.status === "open")
-      .sort((a,b) => {
-        const at = Date.parse(a.open_time || a.created_time || 0);
-        const bt = Date.parse(b.open_time || b.created_time || 0);
-        return bt - at;
-      });
+    const selected = pickMarket(data.markets);
+    if (!selected) throw new Error("No se encontró un mercado activo.");
 
-    const market = active[0] || data.markets[0];
-    renderMarket(market);
-    setStatus("Conectado", true);
-    setMessage("Datos recibidos correctamente de la API pública de Kalshi.");
+    renderMarket(selected);
+    setStatus("Kalshi conectado", true);
+    setMessage("Cotizaciones recibidas de la API configurada de Kalshi.");
   } catch (error) {
-    setStatus("Error de conexión");
-    setMessage("No se pudieron actualizar los datos: " + error.message +
-      ". Comprueba tu conexión e inténtalo más tarde.");
+    setStatus("Error Kalshi");
+    setMessage("Kalshi: " + error.message +
+      ". Comprueba la conexión del Worker y vuelve a intentarlo.");
   } finally {
-    loading = false;
-    $("refresh").disabled = false;
+    kalshiBusy = false;
   }
 }
 
-function drawChart() {
-  const canvas = $("chart");
-  const ctx = canvas.getContext("2d");
-  const rect = canvas.getBoundingClientRect();
-  const ratio = window.devicePixelRatio || 1;
-  canvas.width = Math.max(300, rect.width * ratio);
-  canvas.height = 210 * ratio;
-  ctx.scale(ratio, ratio);
+async function fetchBTC() {
+  if (btcBusy) return;
+  btcBusy = true;
+  try {
+    const response = await fetch(BINANCE_API, {
+      headers:{"Accept":"application/json"},
+      cache:"no-store"
+    });
+    if (!response.ok) throw new Error("Binance HTTP " + response.status);
 
-  const w = canvas.width / ratio;
-  const h = 210;
-  ctx.clearRect(0,0,w,h);
+    const raw = await response.json();
+    if (!Array.isArray(raw) || raw.length < 35) {
+      throw new Error("No hay suficientes velas de BTC.");
+    }
 
-  if (history.length < 2) {
-    ctx.fillStyle = "#9eacc5";
-    ctx.font = "13px system-ui";
-    ctx.fillText("Recopilando datos…", 12, 30);
-    $("samples").textContent = history.length + " observaciones recopiladas";
-    return;
+    btcCandles = raw.map(k => ({
+      time:Number(k[0]),
+      open:Number(k[1]),
+      high:Number(k[2]),
+      low:Number(k[3]),
+      close:Number(k[4]),
+      volume:Number(k[5])
+    })).filter(k =>
+      Number.isFinite(k.close) && k.close > 0 &&
+      Number.isFinite(k.high) && Number.isFinite(k.low)
+    );
+
+    btcLastUpdate = Date.now();
+    renderBTC();
+    calculateSignal();
+    setStatus("Datos actualizados", true);
+  } catch (error) {
+    setStatus("Error de datos");
+    setMessage("Datos BTC: " + error.message +
+      ". Si persiste, puede haber un problema de red o de acceso al servicio.");
+  } finally {
+    btcBusy = false;
   }
-
-  const vals = history.map(p=>p.y);
-  let min = Math.min(...vals), max = Math.max(...vals);
-  if (max - min < 0.01) { min -= 0.01; max += 0.01; }
-
-  const pad = {l:38,r:10,t:12,b:22};
-  const cw = w-pad.l-pad.r, ch = h-pad.t-pad.b;
-
-  ctx.font = "10px system-ui";
-  ctx.fillStyle = "#9eacc5";
-  ctx.strokeStyle = "#293750";
-  ctx.lineWidth = 1;
-
-  for (let i=0;i<4;i++) {
-    const y = pad.t + ch*i/3;
-    ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(w-pad.r,y);ctx.stroke();
-    ctx.fillText(((max-(max-min)*i/3)*100).toFixed(1)+"¢",2,y+4);
-  }
-
-  ctx.strokeStyle = "#70a7ff";
-  ctx.lineWidth = 2;
-  ctx.beginPath();
-  history.forEach((p,i)=>{
-    const x = pad.l + cw*i/(history.length-1);
-    const y = pad.t + ch*(max-p.y)/(max-min);
-    if (i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
-  });
-  ctx.stroke();
-
-  $("samples").textContent =
-    history.length + " observaciones recopiladas · " +
-    new Date(history[0].t).toLocaleTimeString("es-US") + " – ahora";
 }
 
 function ema(values, period) {
   if (values.length < period) return [];
-  const k = 2/(period+1);
-  let current = values.slice(0,period).reduce((a,b)=>a+b,0)/period;
-  const out = Array(period-1).fill(null);
+  const k = 2 / (period + 1);
+  let current = values.slice(0, period)
+    .reduce((a,b) => a+b, 0) / period;
+  const out = Array(period - 1).fill(null);
   out.push(current);
-  for (let i=period;i<values.length;i++) {
-    current = values[i]*k + current*(1-k);
+  for (let i=period; i<values.length; i++) {
+    current = values[i] * k + current * (1-k);
     out.push(current);
   }
   return out;
 }
 
-function updateIndicators() {
-  const vals = history.map(p=>p.y);
-  if (vals.length < 15) {
+function calculateRSI(values, period=14) {
+  if (values.length < period + 1) return null;
+  let gains = 0, losses = 0;
+  for (let i=values.length-period; i<values.length; i++) {
+    const d = values[i] - values[i-1];
+    if (d > 0) gains += d;
+    else losses -= d;
+  }
+  if (losses === 0) return gains === 0 ? 50 : 100;
+  return 100 - 100 / (1 + gains/losses);
+}
+
+function calculateMACD(values) {
+  if (values.length < 35) return null;
+  const e12 = ema(values, 12);
+  const e26 = ema(values, 26);
+  const line = values.map((_,i) =>
+    e12[i] === null || e26[i] === null ? null : e12[i] - e26[i]
+  );
+  const valid = line.filter(v => v !== null);
+  const sig = ema(valid, 9);
+  if (!valid.length || !sig.length) return null;
+  return {
+    line:valid[valid.length-1],
+    signal:sig[sig.length-1],
+    previous:valid.length > 1 ? valid[valid.length-2] : null
+  };
+}
+
+function renderBTC() {
+  if (!btcCandles.length) return;
+  const closes = btcCandles.map(c => c.close);
+  const latest = closes[closes.length-1];
+  const base = closes[Math.max(0, closes.length-4)];
+  const change = base ? (latest-base)/base*100 : 0;
+
+  $("btcPrice").textContent = money(latest);
+  $("btcChange").textContent = "Cambio en 3 min: " +
+    (change > 0 ? "+" : "") + change.toFixed(3) + "%";
+  $("impulse").textContent = (change > 0 ? "+" : "") + change.toFixed(3) + "%";
+  $("impulse").className = "big " +
+    (change > 0 ? "green" : change < 0 ? "red" : "yellow");
+  $("impulseText").textContent =
+    change > 0.025 ? "Impulso positivo reciente" :
+    change < -0.025 ? "Impulso negativo reciente" :
+    "Movimiento corto débil o mixto";
+
+  $("btcHistory").textContent =
+    btcCandles.length + " velas de 1 minuto recibidas · " +
+    "Última vela: " +
+    new Date(btcCandles[btcCandles.length-1].time).toLocaleTimeString("es-US");
+
+  const rsi = calculateRSI(closes);
+  if (rsi === null) {
     $("rsi").textContent = "—";
-    $("rsiText").textContent = "Se necesitan al menos 15 observaciones.";
+    $("rsiText").textContent = "Se necesitan más velas.";
   } else {
-    let gains=0, losses=0;
-    for(let i=vals.length-14;i<vals.length;i++){
-      const d=vals[i]-vals[i-1];
-      if(d>0) gains+=d; else losses-=d;
-    }
-    const rsi = losses===0 ? 100 : 100-(100/(1+gains/losses));
     $("rsi").textContent = rsi.toFixed(1);
     $("rsiBar").style.width = rsi + "%";
-    $("rsiText").textContent = rsi>=70 ? "Zona alta (sobrecompra orientativa)" :
-      rsi<=30 ? "Zona baja (sobreventa orientativa)" : "Zona intermedia";
+    $("rsiText").textContent =
+      rsi >= 70 ? "Zona alta; cuidado con comprar tras una subida." :
+      rsi <= 30 ? "Zona baja; cuidado con vender tras una caída." :
+      "Zona intermedia.";
   }
 
-  
-if (vals.length < 35) {
+  const macd = calculateMACD(closes);
+  if (!macd) {
     $("macd").textContent = "—";
-    $("signal").textContent = "Se necesitan al menos 35 observaciones.";
-    const panel = $("bot-signal");
-    const detail = $("bot-detail");
-    if (panel) {
-      panel.textContent = "🟡 RECOPILANDO DATOS";
-      panel.style.color = "#facc15";
-    }
-    if (detail) {
-      detail.textContent = "Observaciones disponibles: " + vals.length + " de 35. Mantén abierto el monitor.";
-    }
+    $("macdText").textContent = "Se necesitan más velas.";
+  } else {
+    $("macd").textContent = money(macd.line);
+    $("macdText").textContent =
+      (macd.line > macd.signal ? "MACD por encima de su señal" :
+      macd.line < macd.signal ? "MACD por debajo de su señal" :
+      "MACD cerca de su señal") +
+      " · Señal: " + money(macd.signal);
+  }
+}
+
+function calculateSignal() {
+  if (btcCandles.length < 35) {
+    currentDirection = "ESPERAR";
+    currentConfidence = 0;
+    renderSignal("Se necesitan al menos 35 velas de BTC.");
     return;
   }
 
-  const e12=ema(vals,12), e26=ema(vals,26);
-  const line=vals.map((_,i)=>
-    e12[i]===null || e26[i]===null ? null : e12[i]-e26[i]);
-  const valid=line.filter(v=>v!==null);
-  const sig=ema(valid,9);
-  const macd=valid[valid.length-1];
-  const signal=sig[sig.length-1];
-  $("macd").textContent = (macd*100).toFixed(2)+"¢";
-  $("signal").textContent = "Señal: "+(signal*100).toFixed(2)+"¢ · "+
-    (macd>signal ? "MACD por encima de señal" : "MACD por debajo de señal");
-    updateBotSignal();
+  const closes = btcCandles.map(c => c.close);
+  const rsi = calculateRSI(closes);
+  const macd = calculateMACD(closes);
+  const e5 = ema(closes,5);
+  const e13 = ema(closes,13);
+
+  if (rsi === null || !macd || !e5.length || !e13.length) {
+    currentDirection = "ESPERAR";
+    currentConfidence = 0;
+    renderSignal("Todavía no se pueden calcular todos los indicadores.");
+    return;
+  }
+
+  const last = closes[closes.length-1];
+  const prior = closes[Math.max(0,closes.length-4)];
+  const move = prior ? (last-prior)/prior*100 : 0;
+  const emaBull = e5[e5.length-1] > e13[e13.length-1];
+  const emaBear = e5[e5.length-1] < e13[e13.length-1];
+  const macdBull = macd.line > macd.signal;
+  const macdBear = macd.line < macd.signal;
+
+  let up = 0, down = 0;
+  if (emaBull) up++;
+  if (emaBear) down++;
+  if (macdBull) up++;
+  if (macdBear) down++;
+  if (rsi > 52 && rsi < 70) up++;
+  if (rsi < 48 && rsi > 30) down++;
+  if (move > 0.025) up++;
+  if (move < -0.025) down++;
+
+  const total = 4;
+  const agreement = Math.max(up,down) / total;
+  const strength = Math.min(1, Math.abs(move)/0.12);
+  currentConfidence = Math.round(
+    Math.min(85, Math.max(25, 35 + agreement*35 + strength*15))
+  );
+
+  let next = "ESPERAR";
+  if (up >= 3 && up > down) next = "UP";
+  else if (down >= 3 && down > up) next = "DOWN";
+
+  /*
+   * Avoid extreme RSI entries; extreme readings may indicate a move
+   * that is already extended. This is a filter, not a prediction.
+   */
+  if (next === "UP" && rsi >= 75) next = "ESPERAR";
+  if (next === "DOWN" && rsi <= 25) next = "ESPERAR";
+
+  const previousDirection = currentDirection;
+  currentDirection = next;
+
+  $("confidence").textContent = currentConfidence + "/100";
+  $("confidenceBar").style.width = currentConfidence + "%";
+  $("confidenceText").textContent =
+    "Puntuación técnica orientativa; no es una probabilidad de ganar.";
+
+  const details =
+    "RSI " + rsi.toFixed(1) +
+    " · EMA " + (emaBull ? "alcista" : emaBear ? "bajista" : "mixta") +
+    " · MACD " + (macdBull ? "positivo" : macdBear ? "negativo" : "mixto");
+
+  renderSignal(details);
+  updateBTCObjective(next);
+  updateEntryAndTargets();
+
+  const key = next + ":" + Math.floor(currentConfidence/10);
+  if (key !== lastSignalKey && next !== "ESPERAR") {
+    lastSignalKey = key;
+    addSignalHistory(next, currentConfidence, last);
+    notify("BTC SEÑALES VIP: " + next,
+      "BTC: " + money(last) + " · Confianza orientativa: " +
+      currentConfidence + "/100");
+  } else if (next === "ESPERAR") {
+    lastSignalKey = "";
+  }
+
+  if (previousDirection !== next) {
+    signalStartedAt = Date.now();
+  }
+  updateDuration();
 }
 
-let lastRecordedSignal = "";
-let botSignalHistory = [];
+function renderSignal(detail) {
+  const panel = $("profitSignal");
+  const dot = '<span class="signal-dot"></span>';
 
-function recordBotSignal(signalName, rsi, macd, macdSignal) {
-  if (signalName === lastRecordedSignal) return;
+  if (currentDirection === "UP") {
+    panel.className = "signal-name green";
+    panel.innerHTML = dot + "PROFIT UP ↑";
+    $("direction").textContent = "UP ↑";
+    $("direction").className = "value green";
+    $("signalDetail").textContent = "Sesgo alcista técnico. " + detail;
+  } else if (currentDirection === "DOWN") {
+    panel.className = "signal-name red";
+    panel.innerHTML = dot + "PROFIT DOWN ↓";
+    $("direction").textContent = "DOWN ↓";
+    $("direction").className = "value red";
+    $("signalDetail").textContent = "Sesgo bajista técnico. " + detail;
+  } else {
+    panel.className = "signal-name yellow";
+    panel.innerHTML = dot + "ESPERAR";
+    $("direction").textContent = "ESPERAR";
+    $("direction").className = "value yellow";
+    $("signalDetail").textContent = detail;
+  }
 
-  lastRecordedSignal = signalName;
+  $("signalTime").textContent = new Date().toLocaleTimeString("es-US");
+}
 
-  const now = new Date().toLocaleTimeString();
-  botSignalHistory.unshift({
-    time: now,
-    name: signalName,
-    rsi: rsi.toFixed(1),
-    macd: macd.toFixed(2),
-    signal: macdSignal.toFixed(2)
+function updateBTCObjective(direction) {
+  if (!btcCandles.length || direction === "ESPERAR") {
+    $("btcTarget").textContent = "—";
+    $("btcTargetDetail").textContent =
+      "Sin dirección técnica confirmada; no se muestra un objetivo.";
+    return;
+  }
+
+  const candles = btcCandles.slice(-15);
+  const last = candles[candles.length-1].close;
+  const ranges = candles.map(c => Math.max(c.high-c.low,0));
+  const avgRange = ranges.reduce((a,b)=>a+b,0)/ranges.length;
+
+  /*
+   * Illustrative short-horizon objective based on recent average candle
+   * range. This is not a statistical forecast.
+   */
+  const distance = avgRange * 2;
+  const target = direction === "UP" ? last+distance : last-distance;
+
+  $("btcTarget").textContent = money(target);
+  $("btcTargetDetail").textContent =
+    (direction === "UP" ? "Objetivo ilustrativo al alza" :
+    "Objetivo ilustrativo a la baja") +
+    " · Rango medio reciente × 2. No garantiza que BTC llegue a ese precio.";
+}
+
+function updateEntryAndTargets() {
+  if (!market) return;
+
+  const yesAsk = normalizeContractPrice(firstNum(
+    market.yes_ask_dollars, market.yes_ask
+  ));
+  const noAsk = normalizeContractPrice(firstNum(
+    market.no_ask_dollars, market.no_ask
+  ));
+
+  const side = currentDirection === "UP" ? "YES" :
+    currentDirection === "DOWN" ? "NO" : null;
+  const entry = side === "YES" ? yesAsk : side === "NO" ? noAsk : null;
+
+  $("suggestedContract").textContent = side || "—";
+  $("entryPrice").textContent = cents(entry);
+
+  if (!side || entry === null) {
+    $("bestMoment").textContent = "ESPERAR";
+    $("bestMoment").className = "value yellow";
+    $("bestDetail").textContent = "No hay dirección confirmada o falta la cotización.";
+    $("entryStatus").textContent = "Sin señal";
+    $("entryStatus").className = "value yellow";
+    $("entryExplanation").textContent =
+      "No se propone una entrada mientras falte una señal técnica o un precio.";
+    clearTargets();
+    return;
+  }
+
+  const tooLate = entry >= 0.60;
+  const expensive = entry >= ENTRY_CEILING;
+
+  if (tooLate) {
+    $("bestMoment").textContent = "ENTRADA TARDÍA";
+    $("bestMoment").className = "value red";
+    $("bestDetail").textContent =
+      "El precio de venta es de 60¢ o más. Evita perseguir el movimiento.";
+    $("entryStatus").textContent = "Tardía";
+    $("entryStatus").className = "value red";
+    $("entryExplanation").textContent =
+      "La señal técnica no significa que el contrato siga ofreciendo una buena entrada.";
+  } else if (expensive) {
+    $("bestMoment").textContent = "ESPERAR";
+    $("bestMoment").className = "value yellow";
+    $("bestDetail").textContent =
+      "El contrato está cerca del límite de entrada configurado.";
+    $("entryStatus").textContent = "Precio elevado";
+    $("entryStatus").className = "value yellow";
+    $("entryExplanation").textContent =
+      "Se usa un límite conservador de referencia; no determina el mejor precio real.";
+  } else {
+    $("bestMoment").textContent = "POSIBLE ENTRADA";
+    $("bestMoment").className = "value green";
+    $("bestDetail").textContent =
+      "Señal técnica activa y precio por debajo de 60¢; verifica las reglas del contrato.";
+    $("entryStatus").textContent = "Bajo el límite";
+    $("entryStatus").className = "value green";
+    $("entryExplanation").textContent =
+      "Es un filtro automático, no una recomendación garantizada ni confirmación de ejecución.";
+  }
+
+  /*
+   * Reset the reference price only when the recommended contract side changes.
+   * The displayed targets remain tied to this reference until the side changes
+   * or the signal returns to WAIT and is later confirmed again.
+   */
+  if (targetSide !== side) {
+    targetSide = side;
+    targetEntry = entry;
+    reachedTargets = new Set();
+    lastTargetAlert = "";
+  } else if (targetEntry === null) {
+    targetEntry = entry;
+  }
+
+  renderTargets();
+  checkTargetProgress(side, entry);
+}
+
+function clearTargets() {
+  $("targetEntry").textContent = "—";
+  $("target20").textContent = "—";
+  $("target30").textContent = "—";
+  $("target50").textContent = "—";
+}
+
+function targetPrice(entry, pct) {
+  if (entry === null || entry <= 0) return null;
+  return Math.min(0.99, Math.ceil(entry * (1+pct) * 100) / 100);
+}
+
+function renderTargets() {
+  if (targetEntry === null) {
+    clearTargets();
+    return;
+  }
+  $("targetEntry").textContent = cents(targetEntry);
+  $("target20").textContent = cents(targetPrice(targetEntry,0.20));
+  $("target30").textContent = cents(targetPrice(targetEntry,0.30));
+  $("target50").textContent = cents(targetPrice(targetEntry,0.50));
+}
+
+function checkTargetProgress(side, currentAsk) {
+  if (targetEntry === null || !Number.isFinite(currentAsk)) return;
+
+  const levels = [
+    {name:"+20%",pct:0.20},
+    {name:"+30%",pct:0.30},
+    {name:"+50%",pct:0.50}
+  ];
+
+  for (const level of levels) {
+    const target = targetPrice(targetEntry, level.pct);
+    const key = side + level.name;
+    if (target !== null && currentAsk >= target && !reachedTargets.has(key)) {
+      reachedTargets.add(key);
+      const msg = "El precio de venta observado para " + side +
+        " alcanzó el nivel teórico " + level.name + " (" + cents(target) + ").";
+      $("alert").style.display = "block";
+      $("alert").textContent = msg;
+      notify("BTC SEÑALES VIP · Objetivo " + level.name, msg);
+    }
+  }
+}
+
+function addSignalHistory(direction, confidence, price) {
+  signalHistory.unshift({
+    time:new Date().toLocaleTimeString("es-US"),
+    direction,
+    confidence,
+    price
   });
+  signalHistory = signalHistory.slice(0,15);
 
-  botSignalHistory = botSignalHistory.slice(0, 20);
-
-  const historyElement = $("bot-history");
-  if (historyElement) {
-    historyElement.innerHTML = botSignalHistory.map(item =>
-      `<div style="padding:6px 0;border-bottom:1px solid #374151;">
-        <strong>${item.name}</strong> · ${item.time}<br>
-        RSI: ${item.rsi} · MACD: ${item.macd}¢ · Señal: ${item.signal}¢
-      </div>`
-    ).join("");
-  }
+  $("signalHistory").innerHTML = signalHistory.map(s => {
+    const cls = s.direction === "UP" ? "green" : "red";
+    return "<tr><td>" + s.time + "</td><td class='" + cls + "'>" +
+      s.direction + "</td><td>" + s.confidence + "/100</td><td>" +
+      money(s.price) + "</td></tr>";
+  }).join("");
 }
-let botSignalStartTime = null;
-let botCurrentSignal = "";
 
-function updateBotDuration(signalName) {
-  const durationElement = document.getElementById("bot-duration");
-  if (!durationElement) return;
-
-  const now = Date.now();
-
-  if (signalName !== botCurrentSignal) {
-    botCurrentSignal = signalName;
-    botSignalStartTime = now;
-  }
-
-  if (signalName === "ESPERANDO") {
-    durationElement.textContent = "Esperando una señal válida...";
+function updateDuration() {
+  if (!signalStartedAt || currentDirection === "ESPERAR") {
+    $("signalDuration").textContent = "Duración de la señal: —";
     return;
   }
-
-  const elapsed = Math.floor((now - botSignalStartTime) / 1000);
-  const minutes = Math.floor(elapsed / 60);
-  const seconds = elapsed % 60;
-
-  durationElement.textContent =
-    "Señal activa desde: " +
-    new Date(botSignalStartTime).toLocaleTimeString() +
-    " · Tiempo activa: " +
-    minutes + " min " + seconds + " s";
+  const seconds = Math.floor((Date.now()-signalStartedAt)/1000);
+  $("signalDuration").textContent =
+    "Señal activa desde " + new Date(signalStartedAt).toLocaleTimeString("es-US") +
+    " · Duración: " + Math.floor(seconds/60) + " min " + (seconds%60) + " s";
 }
 
-setInterval(() => {
-  if (botCurrentSignal) {
-    updateBotDuration(botCurrentSignal);
-  }
-}, 1000);
-function updateBotSignal() {
-  const panel = $("bot-signal");
-  const detail = $("bot-detail");
+$("refresh").addEventListener("click", async () => {
+  await Promise.all([fetchKalshi(),fetchBTC()]);
+});
 
-  const rsiText = $("rsi").textContent;
-  const macdText = $("signal").textContent;
-
-  const rsi = parseFloat(rsiText);
-  const match = macdText.match(/Señal:\s*(-?[\d.]+)¢/);
-
-  if (!Number.isFinite(rsi) || !match) {
-    panel.textContent = "🟡 Esperando indicadores...";
-    panel.style.color = "#facc15";
-    detail.textContent = "Se necesitan más datos para evaluar RSI y MACD.";
+$("notify").addEventListener("click", async () => {
+  if (!("Notification" in window)) {
+    $("message").textContent =
+      "Este navegador no permite notificaciones. Mantén el monitor abierto.";
     return;
   }
-
-  const macd = parseFloat($("macd").textContent);
-  const signal = parseFloat(match[1]);
-
-  if (!Number.isFinite(macd) || !Number.isFinite(signal)) {
-    panel.textContent = "🟡 Esperando indicadores...";
-    panel.style.color = "#facc15";
-    detail.textContent = "No se pudieron leer todos los indicadores.";
-    return;
+  try {
+    const permission = await Notification.requestPermission();
+    notificationEnabled = permission === "granted";
+    $("notify").textContent = notificationEnabled ?
+      "Notificaciones activadas" : "Activar notificaciones";
+    $("message").textContent = notificationEnabled ?
+      "Notificaciones activadas." :
+      "No se concedió permiso para notificaciones.";
+  } catch (_) {
+    $("message").textContent =
+      "No se pudieron activar las notificaciones en este navegador.";
   }
+});
 
-let signalName = "ESPERAR";
-
-if (rsi > 50 && macd > signal) {
-  panel.textContent = "🟢 SEÑAL ALCISTA";
-  panel.style.color = "#4ade80";
-  detail.textContent = "RSI > 50 y MACD por encima de su señal.";
-  signalName = "ALCISTA";
-} else if (rsi < 50 && macd < signal) {
-  panel.textContent = "🔴 SEÑAL BAJISTA";
-  panel.style.color = "#f87171";
-  detail.textContent = "RSI < 50 y MACD por debajo de su señal.";
-  signalName = "BAJISTA";
-} else {
-  panel.textContent = "🟡 ESPERAR";
-  panel.style.color = "#facc15";
-  detail.textContent = "RSI y MACD no confirman la misma dirección.";
-}
-
-recordBotSignal(signalName, rsi, macd, signal);
-updateBotDuration(signalName);
-}
-
-
-$("refresh").addEventListener("click", fetchMarkets);
-window.addEventListener("resize", drawChart);
-
-fetchMarkets();
-timer = setInterval(fetchMarkets, INTERVAL);
+setInterval(updateDuration,1000);
+fetchKalshi();
+fetchBTC();
+setInterval(fetchKalshi,KALSHI_INTERVAL);
+setInterval(fetchBTC,BTC_INTERVAL);
 </script>
 </body>
-
-<div id="bot-panel" style="margin:20px auto;padding:16px;max-width:600px;background:#111827;color:white;border:1px solid #374151;border-radius:12px;font-family:Arial,sans-serif;">
-  <h2 style="margin:0 0 12px;">🤖 Bot de señales BTC 15M</h2>
-  <div id="bot-signal" style="font-size:22px;font-weight:bold;color:#facc15;">🟡 Esperando indicadores...</div>
-  <p id="bot-detail" style="margin-bottom:0;color:#d1d5db;">El bot mostrará una señal cuando pueda evaluar los indicadores.</p>
-  <div id="bot-duration" style="margin-top:10px;color:#d1d5db;font-size:14px;">
-  Señal activa desde: — · Tiempo activa: —
-</div>
-<h3 style="margin:16px 0 8px;">📋 Historial de señales</h3>
-<div id="bot-history" style="font-size:13px;line-height:1.6;color:#e5e7eb;">
-  Todavía no hay señales registradas.
-</div>
-
-</div>
 </html>
+
 
