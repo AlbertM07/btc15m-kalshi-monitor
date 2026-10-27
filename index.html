@@ -551,38 +551,6 @@ async function fetchBTC() {
   }
 }
 
-    if (!response.ok) throw new Error("Binance HTTP " + response.status);
-
-    const raw = await response.json();
-    if (!Array.isArray(raw) || raw.length < 35) {
-      throw new Error("No hay suficientes velas de BTC.");
-    }
-
-    btcCandles = raw.map(k => ({
-      time:Number(k[0]),
-      open:Number(k[1]),
-      high:Number(k[2]),
-      low:Number(k[3]),
-      close:Number(k[4]),
-      volume:Number(k[5])
-    })).filter(k =>
-      Number.isFinite(k.close) && k.close > 0 &&
-      Number.isFinite(k.high) && Number.isFinite(k.low)
-    );
-
-    btcLastUpdate = Date.now();
-    renderBTC();
-    calculateSignal();
-    setStatus("Datos actualizados", true);
-  } catch (error) {
-    setStatus("Error de datos");
-    setMessage("Datos BTC: " + error.message +
-      ". Si persiste, puede haber un problema de red o de acceso al servicio.");
-  } finally {
-    btcBusy = false;
-  }
-}
-
 function ema(values, period) {
   if (values.length < period) return [];
   const k = 2 / (period + 1);
