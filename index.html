@@ -762,31 +762,53 @@ function renderSignal(detail) {
   $("signalTime").textContent = new Date().toLocaleTimeString("es-US");
 }
 
+
 function updateBTCObjective(direction) {
-  if (!btcCandles.length || direction === "ESPERAR") {
-    $("btcTarget").textContent = "—";
+  if (!btcCandles.length) {
+    $("btcTarget").textContent = "Esperando datos…";
     $("btcTargetDetail").textContent =
-      "Sin dirección técnica confirmada; no se muestra un objetivo.";
+      "El objetivo aparecerá cuando haya datos de Bitcoin.";
     return;
   }
 
   const candles = btcCandles.slice(-15);
-  const last = candles[candles.length-1].close;
-  const ranges = candles.map(c => Math.max(c.high-c.low,0));
-  const avgRange = ranges.reduce((a,b)=>a+b,0)/ranges.length;
+  const last = candles[candles.length - 1].close;
 
-  /*
-   * Illustrative short-horizon objective based on recent average candle
-   * range. This is not a statistical forecast.
-   */
-  const distance = avgRange * 2;
-  const target = direction === "UP" ? last+distance : last-distance;
+  const ranges = candles.map(c => Math.max(c.high - c.low, 0));
+  const avgRange =
+    ranges.reduce((a, b) => a + b, 0) / ranges.length;
+
+  const closes = btcCandles.map(c => c.close);
+  const prior = closes[Math.max(0, closes.length - 4)];
+  const move = prior ? (last - prior) / prior * 100 : 0;
+
+  // Distancia técnica de referencia, no probabilidad de alcanzar el precio.
+  const distance = Math.max(avgRange * 2, last * 0.0002);
+
+  let target;
+  let explanation;
+
+  if (direction === "UP") {
+    target = last + distance;
+    explanation = "Objetivo técnico orientativo al alza.";
+  } else if (direction === "DOWN") {
+    target = last - distance;
+    explanation = "Objetivo técnico orientativo a la baja.";
+  } else if (move > 0.025) {
+    target = last + distance;
+    explanation = "ESPERAR: posible movimiento al alza, sin confirmación.";
+  } else if (move < -0.025) {
+    target = last - distance;
+    explanation = "ESPERAR: posible movimiento a la baja, sin confirmación.";
+  } else {
+    target = last + (move >= 0 ? distance : -distance);
+    explanation = "ESPERAR: referencia basada en el rango reciente, sin dirección confirmada.";
+  }
 
   $("btcTarget").textContent = money(target);
   $("btcTargetDetail").textContent =
-    (direction === "UP" ? "Objetivo ilustrativo al alza" :
-    "Objetivo ilustrativo a la baja") +
-    " · Rango medio reciente × 2. No garantiza que BTC llegue a ese precio.";
+    explanation + " Precio actual: " + money(last) +
+    ". No es una predicción garantizada.";
 }
 
 function updateEntryAndTargets() {
