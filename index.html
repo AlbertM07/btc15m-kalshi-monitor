@@ -247,6 +247,13 @@ footer { margin:16px 0; line-height:1.6 }
 </div>
 
 <section class="card">
+  <div class="label">MEDIAS MÓVILES DE BTC</div>
+  <p>EMA 5: <strong id="ema5Value">—</strong></p>
+  <p>EMA 13: <strong id="ema13Value">—</strong></p>
+</section>
+
+
+<section class="card">
   <h2>Historial de señales</h2>
   <div style="overflow-x:auto">
     <table>
@@ -705,6 +712,10 @@ function calculateSignal() {
   currentDirection = next;
 
   $("confidence").textContent = currentConfidence + "/100";
+  
+$("ema5Value").textContent = e5[e5.length - 1].toFixed(2);
+$("ema13Value").textContent = e13[e13.length - 1].toFixed(2);
+
   $("confidenceBar").style.width = currentConfidence + "%";
   $("confidenceText").textContent =
     "Puntuación técnica orientativa; no es una probabilidad de ganar.";
